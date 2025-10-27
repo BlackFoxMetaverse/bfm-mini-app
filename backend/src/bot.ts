@@ -61,7 +61,7 @@ async function connectMongo() {
         autoIndex: true,
         serverSelectionTimeoutMS: 5000,
       });
-      const dbName = "bfm_bot";
+      const dbName = "db-mini-b";
       console.log("✅ Mongo connected:", dbName);
       console.log("ℹ️ Using collection:", User.collection.collectionName);
       const collections = await mongoose.connection.db

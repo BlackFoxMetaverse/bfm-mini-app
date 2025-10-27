@@ -41,6 +41,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:8181",
   "https://rst6ljsx-5173.inc1.devtunnels.ms",
+  "https://514jqvr0-5173.inc1.devtunnels.ms",
 ];
 
 const corsOptions = {

@@ -20,6 +20,7 @@ import { Layout } from "./layout/Layout";
 import LeadNew from "./pages/LeadNew";
 import UserDetails from "./pages/UserDetails";
 import Games from "./pages/Games";
+import SpinNew from "./pages/SpinNew";
 
 // Navigation order for directional transitions
 const navOrder = ["/spin", "/tasks", "/home", "/leaderboard"];

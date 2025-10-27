@@ -21,6 +21,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 import { playCash } from "../lib/sfx";
 import { Users } from "../components/ui/UserIconSvg";
+import { SpinModal } from "../components/ui/spin-modal";
 
 export default function Tasks() {
   const queryClient = useQueryClient();
@@ -30,9 +31,10 @@ export default function Tasks() {
   const [isVerifyingTwitter, setIsVerifyingTwitter] = useState(false);
   const [isVerifyingInstagram, setIsVerifyingInstagram] = useState(false);
   const [isVerifyingLinkedIn, setIsVerifyingLinkedIn] = useState(false);
+  const [showSpinModal, setShowSpinModal] = useState(false);
 
   // Get user profile to track completion status
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: loadingProfile } = useQuery({
     queryKey: ["user-profile"],
     queryFn: getUserProfile,
   });
@@ -44,6 +46,15 @@ export default function Tasks() {
   const [linkedinStatus, setLinkedInStatus] = useState(null);
   const [mediumStatus, setMediumStatus] = useState(null);
   const [discordStatus, setDiscordStatus] = useState(null);
+  const isLoggedIn = !!profile?.data;
+  const lastSpin = profile?.data?.lastSpinAt
+    ? dayjs(profile.data.lastSpinAt)
+    : null;
+  const canSpin = isLoggedIn && (!lastSpin || now.isAfter(nextSpinTime));
+
+  const nextSpinTime = lastSpin?.add(24, "hour");
+
+  // Determine if user can spin
 
   // const interests = ["Limited", "In-game", "Partners"];
 
@@ -61,7 +72,9 @@ export default function Tasks() {
         if (error.response?.status === 401) {
           toast.error("Please log in again to continue.");
         } else if (error.code === "NETWORK_ERROR" || !navigator.onLine) {
-          toast.error("Connection failed, please check your internet and try again.");
+          toast.error(
+            "Connection failed, please check your internet and try again.",
+          );
         } else {
           toast.error("Failed to load Twitter status. Please try again.");
         }
@@ -105,6 +118,15 @@ export default function Tasks() {
       return null;
     }
   }, []);
+
+  useEffect(() => {
+    const isFromAuth = sessionStorage.getItem("showSpinModalOnHome");
+    if (isFromAuth && isLoggedIn && canSpin && !loadingProfile) {
+      setShowSpinModal(true);
+      // Remove the flag so it doesn't show again on subsequent visits
+      sessionStorage.removeItem("showSpinModalOnHome");
+    }
+  }, [isLoggedIn, canSpin, loadingProfile]);
 
   const fetchMediumStatus = useCallback(async (showErrorFlag = false) => {
     try {
@@ -152,22 +174,32 @@ export default function Tasks() {
             const statusData = await fetchTwitterStatus();
 
             if (statusData?.connected) {
-              toast.success("Twitter Connected! Authorization successful! Please follow us and then verify to claim your reward.");
+              toast.success(
+                "Twitter Connected! Authorization successful! Please follow us and then verify to claim your reward.",
+              );
             } else {
-              toast.success("Authorization Complete! Twitter authorization completed! Please try again if you need to connect.");
+              toast.success(
+                "Authorization Complete! Twitter authorization completed! Please try again if you need to connect.",
+              );
             }
           } else if (twitterAuth === "error") {
             toast.error("Twitter authorization failed. Please try again.");
           } else if (twitterAuth === "cancelled") {
-            toast.error("Twitter authorization was cancelled. You can try again anytime.");
+            toast.error(
+              "Twitter authorization was cancelled. You can try again anytime.",
+            );
           }
         } catch (error) {
           if (error.response?.status === 401) {
             toast.error("Please log in again to continue.");
           } else if (error.code === "NETWORK_ERROR" || !navigator.onLine) {
-            toast.error("Connection failed, please check your internet and try again.");
+            toast.error(
+              "Connection failed, please check your internet and try again.",
+            );
           } else {
-            toast.error("Something went wrong while checking your Twitter status. Please try again.");
+            toast.error(
+              "Something went wrong while checking your Twitter status. Please try again.",
+            );
           }
         }
       }
@@ -183,7 +215,13 @@ export default function Tasks() {
     fetchLinkedInStatus();
     fetchMediumStatus();
     fetchDiscordStatus();
-  }, [fetchTwitterStatus, fetchInstagramStatus, fetchLinkedInStatus, fetchMediumStatus, fetchDiscordStatus]);
+  }, [
+    fetchTwitterStatus,
+    fetchInstagramStatus,
+    fetchLinkedInStatus,
+    fetchMediumStatus,
+    fetchDiscordStatus,
+  ]);
 
   // const toggleInterest = useCallback((interest) => {
   //   setSelectedInterests((prev) =>
@@ -194,72 +232,80 @@ export default function Tasks() {
   // }, []);
 
   // Memoize tasks array
-  const tasks = useMemo(() => [
-    {
-      id: 1,
-      title: "Join our Telegram Community",
-      reward: 1000,
-      url: "https://t.me/invincible_read",
-      iconName: "telegram",
-      type: "telegram",
-    },
-    {
-      id: 2,
-      title: "Follow us on Twitter(X)",
-      reward: 2000,
-      url: "#",
-      iconName: "twitter",
-      type: "twitter",
-    },
-    {
-      id: 3,
-      title: "Follow us on Instagram",
-      reward: 2000,
-      url: "#",
-      iconName: "instagram",
-      type: "instagram",
-    },
-    {
-      id: 4,
-      title: "Follow us on LinkedIn",
-      reward: 2000,
-      url: "#",
-      iconName: "linkedin",
-      type: "linkedin",
-    },
-    {
-      id: 5,
-      title: "Follow us on Medium",
-      reward: 2000,
-      url: "#",
-      iconName: "medium",
-      type: "medium",
-    },
-    {
-      id: 6,
-      title: "Join our Discord",
-      reward: 2000,
-      url: "#",
-      iconName: "discord",
-      type: "discord",
-    },
-  ], []);
+  const tasks = useMemo(
+    () => [
+      {
+        id: 1,
+        title: "Join our Telegram Community",
+        reward: 1000,
+        url: "https://t.me/invincible_read",
+        iconName: "telegram",
+        type: "telegram",
+      },
+      {
+        id: 2,
+        title: "Follow us on Twitter(X)",
+        reward: 2000,
+        url: "#",
+        iconName: "twitter",
+        type: "twitter",
+      },
+      {
+        id: 3,
+        title: "Follow us on Instagram",
+        reward: 2000,
+        url: "#",
+        iconName: "instagram",
+        type: "instagram",
+      },
+      {
+        id: 4,
+        title: "Follow us on LinkedIn",
+        reward: 2000,
+        url: "#",
+        iconName: "linkedin",
+        type: "linkedin",
+      },
+      {
+        id: 5,
+        title: "Follow us on Medium",
+        reward: 2000,
+        url: "#",
+        iconName: "medium",
+        type: "medium",
+      },
+      {
+        id: 6,
+        title: "Join our Discord",
+        reward: 2000,
+        url: "#",
+        iconName: "discord",
+        type: "discord",
+      },
+    ],
+    [],
+  );
 
-  const compulsoryTasks = useMemo(() => tasks.filter((t) => t.id === 1 || t.id === 2), [tasks]);
-  const optionalTasks = useMemo(() => tasks.filter((t) => t.id >= 3 && t.id <= 6), [tasks]);
+  const compulsoryTasks = useMemo(
+    () => tasks.filter((t) => t.id === 1 || t.id === 2),
+    [tasks],
+  );
+  const optionalTasks = useMemo(
+    () => tasks.filter((t) => t.id >= 3 && t.id <= 6),
+    [tasks],
+  );
 
   // Calculate completion using profile socialTasks (preferred) and live status as fallback
   const socialTasks = profile?.data?.socialTasks || [];
-  const isPlatformRewarded = useCallback((platform) =>
-    !!socialTasks.find((t) => t.platform === platform && t.rewarded),
-    [socialTasks]
+  const isPlatformRewarded = useCallback(
+    (platform) =>
+      !!socialTasks.find((t) => t.platform === platform && t.rewarded),
+    [socialTasks],
   );
 
   const telegramCompleted = profile?.data?.telegramRewardClaimed || false;
   const twitterCompleted =
-    isPlatformRewarded("twitter") ||
-    !!twitterStatus?.followRewarded ||
-    false;
+    isPlatformRewarded("twitter") || !!twitterStatus?.followRewarded || false;
   const instagramCompleted =
     isPlatformRewarded("instagram") ||
     !!instagramStatus?.followRewarded ||
@@ -296,7 +342,9 @@ export default function Tasks() {
       const isMember = !!mem?.data?.data?.member;
 
       if (!isMember) {
-        toast.error("Please join the Telegram channel first, then tap Verify & Claim.");
+        toast.error(
+          "Please join the Telegram channel first, then tap Verify & Claim.",
+        );
         return;
       }
 
@@ -313,9 +361,13 @@ export default function Tasks() {
       if (alreadyClaimed) {
         if (bundleAwarded) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Telegram task is done. Complete Twitter task to earn 2,000 tokens.");
+          toast.success(
+            "Telegram task is done. Complete Twitter task to earn 2,000 tokens.",
+          );
         }
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         return;
@@ -325,19 +377,24 @@ export default function Tasks() {
       if (rewarded || bundleAwarded) {
         playCash();
         if (bundleAwarded && rewardAmount >= 2000) {
-          toast.success(`🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success(`✅ Telegram task verified! Complete Twitter task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `✅ Telegram task verified! Complete Twitter task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         }
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         return;
       }
 
-      toast.success("Telegram task recorded. Complete other tasks to earn rewards.");
+      toast.success(
+        "Telegram task recorded. Complete other tasks to earn rewards.",
+      );
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-
     } catch (error) {
-      console.error('Telegram verification error:', error);
+      console.error("Telegram verification error:", error);
       toast.error("Something went wrong while verifying. Please try again.");
     }
   }, [membershipQuery, claimTelegramMutation, queryClient]);
@@ -350,7 +407,9 @@ export default function Tasks() {
 
       // Check if it's a cooldown error FIRST
       if (data.canVerify === false && data.remainingMinutes) {
-        toast.error(`Please wait ${data.remainingMinutes} minute(s) before trying again.`);
+        toast.error(
+          `Please wait ${data.remainingMinutes} minute(s) before trying again.`,
+        );
         return;
       }
 
@@ -364,9 +423,13 @@ export default function Tasks() {
       if (alreadyClaimed) {
         if (bundleAwarded) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Twitter task is done. Complete Telegram task to earn 2,000 tokens.");
+          toast.success(
+            "Twitter task is done. Complete Telegram task to earn 2,000 tokens.",
+          );
         }
         await fetchTwitterStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
@@ -377,32 +440,43 @@ export default function Tasks() {
       if (rewarded !== undefined) {
         if (bundleAwarded && rewardAmount >= 2000) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing all compulsory tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else if (rewarded) {
-          toast.success(`✅ Twitter task verified! Complete Telegram task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `✅ Twitter task verified! Complete Telegram task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Twitter task recorded. Complete other tasks to earn rewards.");
+          toast.success(
+            "Twitter task recorded. Complete other tasks to earn rewards.",
+          );
         }
         await fetchTwitterStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         return;
       }
 
-      toast.error("The verification completed, but we received an unexpected response. Please refresh the page.");
-
+      toast.error(
+        "The verification completed, but we received an unexpected response. Please refresh the page.",
+      );
     } catch (err) {
       if (err.response?.status === 401) {
         toast.error("Please log in again to continue.");
       } else if (err.response?.status === 403) {
         toast.error("Access denied. Please check your permissions.");
       } else if (err.code === "NETWORK_ERROR" || !navigator.onLine) {
-        toast.error("Connection failed, please check your internet and try again.");
+        toast.error(
+          "Connection failed, please check your internet and try again.",
+        );
       } else if (err.response?.data?.message) {
         toast.error(err.response.data.message);
       } else if (err.message) {
         toast.error(err.message);
       } else {
-        toast.error("Something went wrong while verifying Twitter. Please try again.");
+        toast.error(
+          "Something went wrong while verifying Twitter. Please try again.",
+        );
       }
     } finally {
       setIsVerifyingTwitter(false);
@@ -416,7 +490,9 @@ export default function Tasks() {
       const data = result.data || result;
 
       if (data.canVerify === false && data.remainingMinutes) {
-        toast.error(`Please wait ${data.remainingMinutes} minute(s) before trying again.`);
+        toast.error(
+          `Please wait ${data.remainingMinutes} minute(s) before trying again.`,
+        );
         return;
       }
 
@@ -429,9 +505,13 @@ export default function Tasks() {
       if (alreadyClaimed) {
         if (bundleAwarded) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Instagram task is done. Complete one more optional task to earn 2,000 tokens.");
+          toast.success(
+            "Instagram task is done. Complete one more optional task to earn 2,000 tokens.",
+          );
         }
         await fetchInstagramStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
@@ -441,24 +521,35 @@ export default function Tasks() {
       if (rewarded !== undefined) {
         if (bundleAwarded && rewardAmount >= 2000) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else if (rewarded) {
-          toast.success(`✅ Instagram task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `✅ Instagram task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Instagram task recorded. Complete more tasks to earn rewards.");
+          toast.success(
+            "Instagram task recorded. Complete more tasks to earn rewards.",
+          );
         }
         await fetchInstagramStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         return;
       }
 
-      toast.success("Instagram task recorded. Please refresh if status doesn't update.");
+      toast.success(
+        "Instagram task recorded. Please refresh if status doesn't update.",
+      );
       await fetchInstagramStatus();
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-
     } catch (err) {
-      console.error('Instagram verification error:', err);
-      toast.error(err?.response?.data?.message || err?.message || "Failed to verify Instagram.");
+      console.error("Instagram verification error:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to verify Instagram.",
+      );
     } finally {
       setIsVerifyingInstagram(false);
     }
@@ -471,7 +562,9 @@ export default function Tasks() {
       const data = result.data || result;
 
       if (data.canVerify === false && data.remainingMinutes) {
-        toast.error(`Please wait ${data.remainingMinutes} minute(s) before trying again.`);
+        toast.error(
+          `Please wait ${data.remainingMinutes} minute(s) before trying again.`,
+        );
         return;
       }
 
@@ -484,9 +577,13 @@ export default function Tasks() {
       if (alreadyClaimed) {
         if (bundleAwarded) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("LinkedIn task is done. Complete one more optional task to earn 2,000 tokens.");
+          toast.success(
+            "LinkedIn task is done. Complete one more optional task to earn 2,000 tokens.",
+          );
         }
         await fetchLinkedInStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
@@ -496,24 +593,35 @@ export default function Tasks() {
       if (rewarded !== undefined) {
         if (bundleAwarded && rewardAmount >= 2000) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else if (rewarded) {
-          toast.success(`✅ LinkedIn task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `✅ LinkedIn task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("LinkedIn task recorded. Complete more tasks to earn rewards.");
+          toast.success(
+            "LinkedIn task recorded. Complete more tasks to earn rewards.",
+          );
         }
         await fetchLinkedInStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         return;
       }
 
-      toast.success("LinkedIn task recorded. Please refresh if status doesn't update.");
+      toast.success(
+        "LinkedIn task recorded. Please refresh if status doesn't update.",
+      );
       await fetchLinkedInStatus();
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-
     } catch (err) {
-      console.error('LinkedIn verification error:', err);
-      toast.error(err?.response?.data?.message || err?.message || "Failed to verify LinkedIn.");
+      console.error("LinkedIn verification error:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to verify LinkedIn.",
+      );
     } finally {
       setIsVerifyingLinkedIn(false);
     }
@@ -525,7 +633,9 @@ export default function Tasks() {
       const data = result.data || result;
 
       if (data.canVerify === false && data.remainingMinutes) {
-        toast.error(`Please wait ${data.remainingMinutes} minute(s) before trying again.`);
+        toast.error(
+          `Please wait ${data.remainingMinutes} minute(s) before trying again.`,
+        );
         return;
       }
 
@@ -538,9 +648,13 @@ export default function Tasks() {
       if (alreadyClaimed) {
         if (bundleAwarded) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Medium task is done. Complete one more optional task to earn 2,000 tokens.");
+          toast.success(
+            "Medium task is done. Complete one more optional task to earn 2,000 tokens.",
+          );
         }
         await fetchMediumStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
@@ -550,24 +664,35 @@ export default function Tasks() {
       if (rewarded !== undefined) {
         if (bundleAwarded && rewardAmount >= 2000) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else if (rewarded) {
-          toast.success(`✅ Medium task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `✅ Medium task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Medium task recorded. Complete more tasks to earn rewards.");
+          toast.success(
+            "Medium task recorded. Complete more tasks to earn rewards.",
+          );
         }
         await fetchMediumStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         return;
       }
 
-      toast.success("Medium task recorded. Please refresh if status doesn't update.");
+      toast.success(
+        "Medium task recorded. Please refresh if status doesn't update.",
+      );
       await fetchMediumStatus();
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-
     } catch (err) {
-      console.error('Medium verification error:', err);
-      toast.error(err?.response?.data?.message || err?.message || "Failed to verify Medium.");
+      console.error("Medium verification error:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to verify Medium.",
+      );
     }
   }, [fetchMediumStatus, queryClient]);
 
@@ -577,7 +702,9 @@ export default function Tasks() {
       const data = result.data || result;
 
       if (data.canVerify === false && data.remainingMinutes) {
-        toast.error(`Please wait ${data.remainingMinutes} minute(s) before trying again.`);
+        toast.error(
+          `Please wait ${data.remainingMinutes} minute(s) before trying again.`,
+        );
         return;
       }
 
@@ -590,9 +717,13 @@ export default function Tasks() {
       if (alreadyClaimed) {
         if (bundleAwarded) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Discord task is done. Complete one more optional task to earn 2,000 tokens.");
+          toast.success(
+            "Discord task is done. Complete one more optional task to earn 2,000 tokens.",
+          );
         }
         await fetchDiscordStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
@@ -602,24 +733,35 @@ export default function Tasks() {
       if (rewarded !== undefined) {
         if (bundleAwarded && rewardAmount >= 2000) {
           playCash();
-          toast.success(`🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `🎉 You earned 2,000 tokens for completing optional tasks!${totalTokens ? `\n💰 New balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else if (rewarded) {
-          toast.success(`✅ Discord task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`);
+          toast.success(
+            `✅ Discord task verified! Complete one more optional task to earn 2,000 tokens.${totalTokens ? `\n💰 Current balance: ${totalTokens.toLocaleString()}` : ""}`,
+          );
         } else {
-          toast.success("Discord task recorded. Complete more tasks to earn rewards.");
+          toast.success(
+            "Discord task recorded. Complete more tasks to earn rewards.",
+          );
         }
         await fetchDiscordStatus();
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         return;
       }
 
-      toast.success("Discord task recorded. Please refresh if status doesn't update.");
+      toast.success(
+        "Discord task recorded. Please refresh if status doesn't update.",
+      );
       await fetchDiscordStatus();
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-
     } catch (err) {
-      console.error('Discord verification error:', err);
-      toast.error(err?.response?.data?.message || err?.message || "Failed to verify Discord.");
+      console.error("Discord verification error:", err);
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to verify Discord.",
+      );
     }
   }, [fetchDiscordStatus, queryClient]);
 
@@ -629,6 +771,13 @@ export default function Tasks() {
   return (
     <div className="h-screen w-full overflow-y-auto bg-black text-white">
       <Toaster />
+
+      {/* Spin Modal */}
+      <SpinModal
+        isOpen={showSpinModal}
+        onClose={() => setShowSpinModal(false)}
+      />
+
       <div className="mx-auto w-full max-w-md">
         {/* Header Section */}
         <div className="px-4 pt-4">
@@ -646,8 +795,6 @@ export default function Tasks() {
               </p>
             </div>
 
-
-            
             <div className="relative px-4 py-2">
               {/* Outer glow rings */}
               <div
@@ -795,7 +942,6 @@ export default function Tasks() {
                   mediumStatus={mediumStatus}
                   discordStatus={discordStatus}
                   isLoading={isLoading}
-
                   fetchTwitterStatus={fetchTwitterStatus}
                   fetchInstagramStatus={fetchInstagramStatus}
                   fetchLinkedInStatus={fetchLinkedInStatus}

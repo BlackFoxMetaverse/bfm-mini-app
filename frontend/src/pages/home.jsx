@@ -1,15 +1,12 @@
-import { useState, useEffect } from "react";
-import { User } from "lucide-react";
+import { useState } from "react";
 import Header from "../components/header";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "../api/user";
-import { SpinModal } from "../components/ui/spin-modal";
 import dayjs from "dayjs";
 
 export default function HomePage() {
   const [selectedInterests, setSelectedInterests] = useState([]);
-  const [showSpinModal, setShowSpinModal] = useState(false);
 
   // Check if user can spin
   const { data: profileData, isLoading: loadingProfile } = useQuery({
@@ -20,12 +17,8 @@ export default function HomePage() {
 
   // Determine if user can spin
   const isLoggedIn = !!profileData?.data;
-  const lastSpin = profileData?.data?.lastSpinAt
-    ? dayjs(profileData.data.lastSpinAt)
-    : null;
-  const nextSpinTime = lastSpin?.add(24, "hour");
+
   const now = dayjs();
-  const canSpin = isLoggedIn && (!lastSpin || now.isAfter(nextSpinTime));
 
   // Quiz attempts left today
   const attemptsCount = profileData?.data?.quizAttemptsCount || 0;
@@ -40,14 +33,6 @@ export default function HomePage() {
   const canStartQuiz = isLoggedIn && attemptsLeft > 0;
 
   // Show spin modal only on first login and if user can spin
-  useEffect(() => {
-    const isFromAuth = sessionStorage.getItem("showSpinModalOnHome");
-    if (isFromAuth && isLoggedIn && canSpin && !loadingProfile) {
-      setShowSpinModal(true);
-      // Remove the flag so it doesn't show again on subsequent visits
-      sessionStorage.removeItem("showSpinModalOnHome");
-    }
-  }, [isLoggedIn, canSpin, loadingProfile]);
 
   const interests = [
     "AI",
@@ -186,12 +171,6 @@ export default function HomePage() {
         <div className="absolute bottom-32 right-0 z-0 h-12 w-12 animate-pulse bg-white/30"></div>
         <div className="absolute bottom-40 right-16 z-0 h-12 w-12 animate-pulse bg-white/10"></div>
       </section>
-
-      {/* Spin Modal */}
-      <SpinModal
-        isOpen={showSpinModal}
-        onClose={() => setShowSpinModal(false)}
-      />
     </div>
   );
 }

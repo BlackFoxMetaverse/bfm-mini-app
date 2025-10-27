@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export const connection = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI!, {
-      dbName: "bfm_bot",
+      dbName: "db-mini-b",
       serverSelectionTimeoutMS: 30000, // 30 seconds
       socketTimeoutMS: 45000, // 45 seconds
       maxPoolSize: 10, // Maintain up to 10 socket connections
