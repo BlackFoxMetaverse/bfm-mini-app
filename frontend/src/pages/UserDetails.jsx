@@ -269,7 +269,7 @@ const UserDetails = () => {
   };
 
   const handleFAQClick = () =>
-    window.open("https://invincibleread.com/", "_blank");
+    window.open("https://www.bfmacademy.in/", "_blank");
   const handleAgreementClick = () =>
     window.open(encodeURI("/BFM Read User Agreement.pdf"), "_blank");
 

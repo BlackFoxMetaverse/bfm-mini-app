@@ -14,7 +14,7 @@ const projectId = "304c2a0b251e9269a2d919c9a03b27e1"; // You should replace this
 const metadata = {
   name: "BFM Read",
   description: "BFM Read - Web3 Reading Platform",
-  url: "https://invincible-read.com", // Update with your actual domain
+  url: "https://www.bfmacademy.in/", // Update with your actual domain
   icons: ["https://assets.reown.com/reown-profile-pic.png"], // Update with your app icon
 };
 

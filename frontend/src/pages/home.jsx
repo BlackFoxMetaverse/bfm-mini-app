@@ -67,7 +67,7 @@ export default function HomePage() {
         <Header />
 
         <a
-          href="https://invincibleread.com/"
+          href="https://www.bfmacademy.in/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-md group relative mt-10 inline-flex animate-pulse cursor-pointer items-center gap-2 overflow-hidden rounded-xl border border-white/20 bg-white/10 px-4 py-2 font-semibold text-white shadow-md backdrop-blur-md transition-all duration-1000 hover:scale-105 hover:bg-white/20 active:scale-95"

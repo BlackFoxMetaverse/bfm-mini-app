@@ -88,7 +88,7 @@ const Invite = () => {
       return;
     }
 
-    const link = `https://t.me/invincibleminigame_bot?start=r${user.telegramId}`;
+    const link = `https://t.me/bfm_academy_bot?start=r${user.telegramId}`;
 
     const fallbackCopy = (text) => {
       const textArea = document.createElement("textarea");
@@ -138,12 +138,12 @@ const Invite = () => {
       return;
     }
 
-    const referralLink = `https://t.me/invincibleminigame_bot?start=r${user.telegramId}`;
+    const referralLink = `https://t.me/bfm_academy_bot?start=r${user.telegramId}`;
 
     if (navigator.share) {
       navigator
         .share({
-          title: "Join Invincible Mini Game",
+          title: "Join BFM Academy on Telegram!",
           text: "Earn tokens by joining through my invite link!",
           url: referralLink,
         })
@@ -385,7 +385,7 @@ const Invite = () => {
               <div className="group relative overflow-hidden rounded-xl bg-[#2d2d2d] p-3 transition-all duration-300 hover:bg-[#333333]">
                 {user?.telegramId ? (
                   <div className="break-all text-center text-xs text-gray-300 transition-colors duration-300 group-hover:text-white">
-                    https://t.me/invincibleminigame_bot?start=r{user.telegramId}
+                    https://t.me/bfm_academy_bot?start=r{user.telegramId}
                   </div>
                 ) : (
                   <div className="text-center text-xs text-red-400">

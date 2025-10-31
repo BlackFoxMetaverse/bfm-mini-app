@@ -224,7 +224,7 @@ bot.start(async (ctx) => {
         [Markup.button.webApp("🎮 Play Now", playNowUrl)],
         [
           Markup.button.url("🌐 Website", "https://www.bfmacademy.in/"),
-          Markup.button.url("𝕏 Twitter", "https://x.com/invincible_read"),
+          Markup.button.url("𝕏 Twitter", "https://x.com/BFMAcademy"),
         ],
         [
           Markup.button.url("✈️ Telegram", "https://t.me/bfm_academy"),
@@ -322,7 +322,7 @@ Don't miss out on your chance to win! 🎯`;
     [
       Markup.button.webApp(
         "🎡 Spin The Wheel",
-        "https://minigame.invincibleread.com/spin"
+        "https://bfm-mini-app-zu82.vercel.app/spin"
       ),
     ],
   ]);

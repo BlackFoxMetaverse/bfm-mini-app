@@ -238,7 +238,7 @@ export default function Tasks() {
         id: 1,
         title: "Join our Telegram Community",
         reward: 1000,
-        url: "https://t.me/invincible_read",
+        url: "https://t.me/bfmacademyy",
         iconName: "telegram",
         type: "telegram",
       },
