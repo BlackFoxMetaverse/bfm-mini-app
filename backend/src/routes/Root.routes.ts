@@ -4,7 +4,7 @@ import { UserRoute } from "./User.routes";
 import { UpdateTokenRoute } from "./UpdateToken.route";
 import { BookRoute } from "./Book.route";
 import { IntegrationRoute } from "./Integration.route";
-import { AuthRoute } from "./auth.routes";
+import { AuthRoute } from "./Auth.routes";
 
 const rootRoute = Router();
 

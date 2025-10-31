@@ -78,6 +78,7 @@ export interface IUser extends Document {
 
   // Twitter task completion tracking (legacy kept)
   twitterTaskStartedAt?: Date;
+  twitterFollowRewardedAt?: Date;
   twitterFollowRewarded?: boolean;
 
   // Optional tasks are tracked via socialTasks
