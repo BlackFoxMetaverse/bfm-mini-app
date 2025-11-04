@@ -769,7 +769,7 @@ export default function Tasks() {
     membershipQuery.isFetching || claimTelegramMutation.isPending;
 
   return (
-    <div className="h-screen w-full overflow-y-auto bg-black text-white">
+    <div className="h-screen w-full overflow-y-auto overflow-x-hidden bg-black text-white">
       <Toaster />
 
       {/* Spin Modal */}

@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  overflow-x: hidden !important;
+}
+
 /* For the element you want to hide the scrollbar */
 .hide-scrollbar {
   scrollbar-width: none;
