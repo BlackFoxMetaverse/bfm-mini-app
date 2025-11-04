@@ -1,48 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, LayoutGroup } from "framer-motion";
+import "../styles/nav.css";
 
-const NavItem = ({ href, icon, label, isActive }) => {
-  return (
-    <li className="relative flex w-1/5 flex-col items-center">
-      <Link
-        to={href}
-        className="relative flex w-full flex-col items-center px-1"
-        aria-current={isActive ? "page" : undefined}
-      >
-        <div className="relative flex h-8 w-16 items-center justify-center">
-          {/* Smooth moving pill */}
-          {isActive && (
-            <motion.div
-              layoutId="activeBg"
-              className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/40 to-fuchsia-500/40"
-              transition={{ type: "spring", stiffness: 500, damping: 34 }}
-            />
-          )}
-
-          {/* Icon */}
-          <div
-            className={`relative z-10 h-6 w-6 ${isActive ? "text-white" : "text-[#919AA4]"}`}
-          >
-            {icon}
-          </div>
-        </div>
-        <span
-          className={`relative z-10 mt-1 text-xs ${
-            isActive ? "font-medium text-white/60" : "text-white"
-          }`}
-        >
-          {label}
-        </span>
-      </Link>
-    </li>
-  );
-};
-
-const LeaderboardIcon = () => (
+const LeaderboardIcon = ({ h = 35, w = 35 }) => (
   <svg
-    width="24"
-    height="24"
+    width={w}
+    height={h}
     viewBox="0 0 31 30"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -54,10 +18,10 @@ const LeaderboardIcon = () => (
   </svg>
 );
 
-const SpinIcon = () => (
+const SpinIcon = ({ h = 35, w = 35 }) => (
   <svg
-    width="24"
-    height="24"
+    width={w}
+    height={h}
     viewBox="0 0 29 28"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -100,10 +64,10 @@ const SpinIcon = () => (
   </svg>
 );
 
-const TasksIcon = () => (
+const TasksIcon = ({ h = 35, w = 35 }) => (
   <svg
-    width="24"
-    height="24"
+    width={w}
+    height={h}
     viewBox="0 0 33 32"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -130,6 +94,7 @@ const navItemsConfig = [
 
 export const BottomNavigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   const isNavItemActive = (itemHref) => {
@@ -139,26 +104,32 @@ export const BottomNavigation = () => {
     return false;
   };
 
+  const handleNavigation = (href) => {
+    navigate(href);
+  };
+
   return (
-    <nav className="sticky bottom-0 left-0 right-0 z-50 w-full">
-      <LayoutGroup id="bottom-nav">
-        <ul className="mx-auto flex max-w-md justify-between border-t border-white/10 bg-[#141414] px-2 py-4 shadow-lg">
-          {navItemsConfig.map((item) => (
-            <motion.div
-              key={item.id}
-              layout
-              className="flex w-1/5 justify-center"
-            >
-              <NavItem
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-                isActive={isNavItemActive(item.href)}
-              />
-            </motion.div>
-          ))}
+    <nav className="overflow-hidden">
+      <div className="nav-box">
+        <ul className="nav-container">
+          {navItemsConfig.map((item) => {
+            const isActive = isNavItemActive(item.href);
+            return (
+              <li
+                key={item.id}
+                className={`nav__item ${isActive ? "active" : ""}`}
+                onClick={() => handleNavigation(item.href)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="nav__item-link">
+                  <div className="nav__item-icon">{item.icon}</div>
+                  <span className="nav__item-text">{item.label}</span>
+                </div>
+              </li>
+            );
+          })}
         </ul>
-      </LayoutGroup>
+      </div>
     </nav>
   );
 };

@@ -1,0 +1,103 @@
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 24px;
+  max-width: 500px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+}
+
+.nav-box {
+  display: flex;
+  padding: 8px;
+  background-color: #222222; /* Dark background */
+  box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.6);
+  border-radius: 15px;
+}
+
+.nav-container {
+  display: flex;
+  width: 100%;
+  list-style: none;
+  justify-content: space-around;
+  margin: 0;
+  padding: 0;
+  /* overflow-x: hidden !important; */
+}
+
+.nav__item {
+  display: flex;
+  position: relative;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.nav__item.active .nav__item-icon {
+  margin-top: -33px;
+}
+
+.nav__item.active .nav__item-icon svg {
+  color: #ffcf27;
+}
+
+.nav__item.active .nav__item-text {
+  transform: scale(1);
+  color: #ffcf27; /* Yellow text when active */
+}
+
+.nav__item-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+}
+
+.nav__item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6em;
+  background-color: #222222; 
+  border-radius: 50%;
+  height: 56px;
+  width: 56px;
+  transition:
+    margin-top 250ms ease-in-out,
+    box-shadow 250ms ease-in-out,
+    background-color 250ms ease-in-out;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.nav__item-icon svg {
+  color: #EEEEEE; /* Gray color for inactive icons */
+  transition: color 250ms ease-in-out;
+}
+
+.nav__item-text {
+  position: absolute;
+  bottom: 0;
+  transform: scale(0);
+  transition:
+    transform 250ms ease-in-out,
+    color 250ms ease-in-out;
+  color: #EEEEEE; /* Gray color for inactive text */
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Hover effect for non-active items */
+.nav__item:not(.active):hover .nav__item-icon {
+  background-color: #383838;
+}
+
+.nav__item:not(.active):hover .nav__item-icon svg {
+  color: #d1d5db;
+}
+
+/* Prevent any overflow */
+* {
+  box-sizing: border-box;
+}
