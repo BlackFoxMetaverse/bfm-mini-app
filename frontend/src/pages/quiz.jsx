@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { RotateCw, CheckCircle2, XCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { RotateCw, CheckCircle2, XCircle, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/header";
 import { generateQuiz } from "../lib/gemini";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -18,6 +18,8 @@ export default function QuizPage() {
   const [pointsEarned, setPointsEarned] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate();
 
   // Fetch profile to determine attempts left
   const { data: profileData, isLoading: loadingProfile } = useQuery({
@@ -38,7 +40,7 @@ export default function QuizPage() {
     attemptsDate.getDate() === now.getDate();
   const effectiveCountToday = isSameDay ? attemptsCount : 0;
   const attemptsLeft = Math.max(0, 3 - effectiveCountToday);
-  // Shared loader to (re)generate questions
+
   const loadQuizQuestions = async () => {
     setIsLoading(true);
     try {
@@ -52,43 +54,37 @@ export default function QuizPage() {
       setQuestions([
         {
           id: 1,
-          text: "WHAT IS ONE OF THE KEY TECHNOLOGIES BEHIND BLOCKCHAIN?",
+          text: "What is one of the key technologies behind blockchain?",
           options: [
-            "DISTRIBUTED LEDGER",
-            "FLOPPY DISKS",
-            "VHS TAPES",
-            "DIAL-UP INTERNET",
+            "Distributed Ledger",
+            "Floppy Disks",
+            "VHS Tapes",
+            "Dial-up Internet",
           ],
           correctAnswer: 0,
           explanation:
             "Distributed ledger technology is foundational to blockchain, allowing data to be stored across multiple nodes rather than in a single central location.",
-          image:
-            "https://images.unsplash.com/photo-1639322537228-f710d846310a?w=800&auto=format&fit=crop",
         },
         {
           id: 2,
-          text: "WHICH OF THESE CRYPTOCURRENCY PROJECTS FOCUSES ON SMART CONTRACTS?",
-          options: ["BITCOIN", "ETHEREUM", "DOGECOIN", "LITECOIN"],
+          text: "Which of these cryptocurrency projects focuses on smart contracts?",
+          options: ["Bitcoin", "Ethereum", "Dogecoin", "Litecoin"],
           correctAnswer: 1,
           explanation:
             "Ethereum was the first blockchain platform to introduce robust smart contract functionality, enabling developers to build decentralized applications (dApps).",
-          image:
-            "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=800&auto=format&fit=crop",
         },
         {
           id: 3,
-          text: "WHAT DOES NFT STAND FOR?",
+          text: "What does NFT stand for?",
           options: [
-            "NON-FUNGIBLE TOKEN",
-            "NEW FILE TYPE",
-            "NETWORK FILE TRANSFER",
-            "NATIVE FUNCTION TOKEN",
+            "Non-Fungible Token",
+            "New File Type",
+            "Network File Transfer",
+            "Native Function Token",
           ],
           correctAnswer: 0,
           explanation:
             "NFT stands for Non-Fungible Token, representing unique digital assets. Unlike cryptocurrencies where each token is identical, NFTs have unique properties making them distinct from one another.",
-          image:
-            "https://images.unsplash.com/photo-1645937367476-bbeaa0184edb?w=800&auto=format&fit=crop",
         },
       ]);
     } finally {
@@ -96,13 +92,12 @@ export default function QuizPage() {
     }
   };
 
-  // Load questions when component mounts
   useEffect(() => {
-    if (quizComplete) return; // Do not auto-load while showing results screen
+    if (quizComplete) return;
     if (!loadingProfile && attemptsLeft === 0) {
       setIsLoading(false);
       setQuestions([]);
-      return; // Block loading quiz when no attempts left
+      return;
     }
     if (!loadingProfile && attemptsLeft > 0) {
       loadQuizQuestions();
@@ -110,37 +105,33 @@ export default function QuizPage() {
   }, [loadingProfile, attemptsLeft, quizComplete]);
 
   const handleSelectAnswer = (answerIndex) => {
-    if (showFeedback) return; // Prevent changing answer during feedback
+    if (showFeedback) return;
     setSelectedAnswer(answerIndex);
     setShowFeedback(true);
 
-    // Check if answer is correct and update score
     if (answerIndex === questions[currentQuestionIndex].correctAnswer) {
       setScore(score + 1);
     }
   };
+
   const { mutate } = useMutation({
     mutationFn: (token) => updateQuizResult(token.token),
     onSuccess: () => {
       playCash();
-      // Refetch profile so header points and attempts update immediately
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
     onError: (error) => {
       console.error("❌ Error claiming reward:", error);
     },
   });
+
   const handleNextQuestion = () => {
     setShowFeedback(false);
 
-    // Move to next question or end quiz
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
     } else {
-      // Calculate points earned - 20 points per correct answer, clamped to [0,100]
-      // This ensures quiz rewards are always between 0 and 100 points
-      // const earnedPoints = score * 100 + Math.floor(Math.random() * 500);
       const earnedPoints = Math.min(Math.max(score * 20, 0), 100);
       setPointsEarned(earnedPoints);
       setQuizComplete(true);
@@ -149,7 +140,6 @@ export default function QuizPage() {
   };
 
   const handleTryAgain = async () => {
-    // Refresh profile to get updated attempts after last completion
     await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     const refreshed = await queryClient.refetchQueries({
       queryKey: ["user-profile"],
@@ -169,13 +159,11 @@ export default function QuizPage() {
     const left = Math.max(0, 3 - (sameDay2 ? newAttemptsCount : 0));
 
     if (left <= 0) {
-      // No attempts left
       setQuizComplete(false);
       setQuestions([]);
       return;
     }
 
-    // Reset state and load new questions
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setScore(0);
@@ -184,32 +172,44 @@ export default function QuizPage() {
     await loadQuizQuestions();
   };
 
-  // If we're still loading questions (and attempts remain), show a loading screen
+  // Enhanced Loading Screen
   if (!quizComplete && isLoading && attemptsLeft > 0) {
     return (
-      <div className="relative min-h-screen bg-brandblue">
-        <section className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center bg-brandblue p-4">
-          <div className="animate-pulse text-2xl font-bold text-white">
+      <div className="relative min-h-screen bg-[#1a1a2e]">
+        <section className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center p-4">
+          <div className="relative">
+            {/* Outer rotating ring */}
+            <div className="absolute -inset-4 animate-spin rounded-full border-4 border-[#6C63FF]/30"></div>
+            {/* Middle pulsing ring */}
+            <div className="absolute -inset-2 animate-pulse rounded-full border-4 border-[#6C63FF]/50"></div>
+            {/* Inner spinning dots */}
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-[#6C63FF]/20">
+              <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 animate-ping rounded-full bg-[#6C63FF]"></div>
+            </div>
+          </div>
+          <div className="mt-8 animate-pulse text-2xl font-bold text-white">
             Generating your quiz...
           </div>
-          <div className="mt-4 h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+          <div className="mt-2 text-sm text-gray-400">This won't take long</div>
         </section>
       </div>
     );
   }
 
-  // Block when no attempts left
+  // No attempts left
   if (!loadingProfile && attemptsLeft === 0) {
     return (
-      <div className="relative min-h-screen bg-brandblue">
-        <section className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center bg-brandblue p-4">
+      <div className="relative min-h-screen bg-[#1a1a2e]">
+        <section className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center p-4">
           <Header />
           <div className="mt-6 text-center text-2xl font-bold text-white">
-            You have reached your 3 quiz attempts for today.
+            You've completed all 3 attempts for today
           </div>
-          <p className="mt-2 text-center text-white/80">Try again tomorrow.</p>
+          <p className="mt-2 text-center text-gray-400">
+            Come back tomorrow for more quizzes!
+          </p>
           <Link to="/home" className="mt-6">
-            <button className="rounded-md border border-background px-6 py-3 text-background">
+            <button className="rounded-lg bg-[#6C63FF] px-8 py-3 font-semibold text-white transition-colors hover:bg-[#5952d4]">
               Back to Home
             </button>
           </Link>
@@ -218,19 +218,17 @@ export default function QuizPage() {
     );
   }
 
-  // Don't try to access questions if there are none
   if (questions.length === 0) {
     return (
-      <div className="relative min-h-screen bg-brandblue">
-        <section className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center bg-brandblue p-4">
-          <div className="text-2xl font-bold text-white">
-            Couldn't load quiz questions. Please try again.
+      <div className="relative min-h-screen bg-[#1a1a2e]">
+        <section className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center p-4">
+          <div className="text-center text-2xl font-bold text-white">
+            Couldn't load quiz questions
           </div>
-          <Link
-            to="/home"
-            className="mt-6 rounded-md bg-white px-6 py-3 text-brandblue"
-          >
-            Back to Home
+          <Link to="/home" className="mt-6">
+            <button className="rounded-lg bg-[#6C63FF] px-8 py-3 font-semibold text-white">
+              Back to Home
+            </button>
           </Link>
         </section>
       </div>
@@ -238,84 +236,98 @@ export default function QuizPage() {
   }
 
   const currentQuestion = questions[currentQuestionIndex];
-  const progressPercentage = (currentQuestionIndex / questions.length) * 100;
+  const progressPercentage =
+    ((currentQuestionIndex + 1) / questions.length) * 100;
   const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
 
   return (
-    <div className="relative h-screen overflow-hidden bg-brandblue">
-      <section className="relative mx-auto flex h-full w-full max-w-md flex-col bg-brandblue p-4">
-        <Header />
+    <div className="relative min-h-screen bg-[#1a1a2e]">
+      <section className="relative mx-auto flex min-h-screen w-full max-w-md flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pb-4 pt-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2a2a3e] text-white transition-colors hover:bg-[#3a3a4e]"
+          >
+            <X size={20} />
+          </button>
+          <div className="flex items-center gap-2 rounded-full bg-[#2a2a3e] px-4 py-2">
+            <div className="h-2 w-2 rounded-full bg-[#6C63FF]"></div>
+            <span className="text-sm font-semibold text-white">
+              {currentQuestionIndex + 1} / {questions.length}
+            </span>
+          </div>
+        </div>
 
         {/* Quiz Content */}
         {!quizComplete ? (
-          <div className="flex flex-1 flex-col overflow-y-auto px-0 pb-20">
+          <div className="flex flex-1 flex-col px-6 pb-8">
             {/* Progress Bar */}
-            <div className="mb-6 flex w-full items-center">
-              <div className="h-1 w-full rounded-full bg-background/30">
+            <div className="mb-8">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[#2a2a3e]">
                 <div
-                  className="h-1 rounded-full bg-background"
+                  className="h-full rounded-full bg-[#6C63FF] transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
             </div>
 
-            {/* Question Number */}
-            <div className="mb-4">
-              <h3 className="inline-block border-b border-background pb-1 text-lg font-semibold text-background">
-                QUESTION {currentQuestionIndex + 1} OF {questions.length}
-              </h3>
-            </div>
-
             {/* Question Text */}
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-background">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold leading-tight text-white">
                 {currentQuestion.text}
               </h2>
             </div>
 
             {/* Answer Options */}
-            <div className="mt-4 space-y-3">
-              {currentQuestion.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSelectAnswer(index)}
-                  disabled={showFeedback}
-                  className={`relative w-full rounded-md border px-4 py-3 text-left transition-colors ${
-                    showFeedback && index === currentQuestion.correctAnswer
-                      ? "border-green-400 bg-green-400/20 text-white"
-                      : showFeedback &&
-                          selectedAnswer === index &&
-                          selectedAnswer !== currentQuestion.correctAnswer
-                        ? "border-red-400 bg-red-400/20 text-white"
-                        : selectedAnswer === index
-                          ? "border-background bg-background text-brandblue"
-                          : "border-background bg-transparent text-white hover:bg-background/10"
-                  }`}
-                >
-                  {option}
-                  {showFeedback && index === currentQuestion.correctAnswer && (
-                    <CheckCircle2
-                      size={18}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-green-400"
-                    />
-                  )}
-                  {showFeedback &&
-                    selectedAnswer === index &&
-                    selectedAnswer !== currentQuestion.correctAnswer && (
-                      <XCircle
-                        size={18}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-red-400"
+            <div className="flex-1 space-y-3">
+              {currentQuestion.options.map((option, index) => {
+                const isSelected = selectedAnswer === index;
+                const isCorrectAnswer = index === currentQuestion.correctAnswer;
+                const showCorrect = showFeedback && isCorrectAnswer;
+                const showWrong =
+                  showFeedback && isSelected && !isCorrectAnswer;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleSelectAnswer(index)}
+                    disabled={showFeedback}
+                    className={`group relative w-full rounded-2xl px-6 py-4 text-left font-medium transition-all ${
+                      showCorrect
+                        ? "border-2 border-green-400 bg-green-500/20 text-white"
+                        : showWrong
+                          ? "border-2 border-red-400 bg-red-500/20 text-white"
+                          : isSelected
+                            ? "scale-[1.02] border-2 border-[#6C63FF] bg-[#6C63FF] text-white"
+                            : "border-2 border-[#2a2a3e] bg-[#2a2a3e] text-white hover:border-[#4a4a5e] hover:bg-[#3a3a4e]"
+                    }`}
+                  >
+                    <span className="block">{option}</span>
+                    {showCorrect && (
+                      <CheckCircle2
+                        size={20}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-green-400"
                       />
                     )}
-                </button>
-              ))}
+                    {showWrong && (
+                      <XCircle
+                        size={20}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-red-400"
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Explanation after answering */}
             {showFeedback && (
               <div
-                className={`mt-6 rounded-md p-4 ${
-                  isCorrect ? "bg-green-500/10" : "bg-red-500/10"
+                className={`mt-6 rounded-2xl p-5 ${
+                  isCorrect
+                    ? "border border-green-400/30 bg-green-500/10"
+                    : "border border-red-400/30 bg-red-500/10"
                 }`}
               >
                 <div className="mb-2 flex items-center">
@@ -324,92 +336,94 @@ export default function QuizPage() {
                   ) : (
                     <XCircle size={20} className="mr-2 text-red-400" />
                   )}
-                  <h3 className="font-bold text-background">
+                  <h3 className="font-bold text-white">
                     {isCorrect ? "Correct!" : "Incorrect!"}
                   </h3>
                 </div>
-                <p className="text-sm text-background">
+                <p className="text-sm leading-relaxed text-white/80">
                   {currentQuestion.explanation}
                 </p>
               </div>
             )}
 
             {/* Next Button */}
-            <div className="mt-8 flex justify-center">
+            <div className="mt-6">
               <button
                 onClick={handleNextQuestion}
-                disabled={selectedAnswer === null || !showFeedback}
-                className={`flex h-14 w-14 items-center justify-center rounded-full ${
-                  selectedAnswer !== null && showFeedback
-                    ? "bg-background text-brandblue"
-                    : "bg-background/50 text-brandblue/50"
+                disabled={!showFeedback}
+                className={`w-full rounded-2xl py-4 text-lg font-bold transition-all ${
+                  showFeedback
+                    ? "bg-[#6C63FF] text-white hover:bg-[#5952d4]"
+                    : "cursor-not-allowed bg-[#2a2a3e] text-gray-500"
                 }`}
               >
-                <span className="text-2xl font-bold">→</span>
+                {currentQuestionIndex < questions.length - 1
+                  ? "Next Question"
+                  : "See Results"}{" "}
+                🔒
               </button>
             </div>
           </div>
         ) : (
           /* Quiz Complete Screen */
-          <div className="flex flex-1 flex-col justify-between">
+          <div className="flex flex-1 flex-col justify-between px-6 pb-8">
             {/* Main Content */}
-            <div className="flex flex-1 flex-col items-center justify-center space-y-4">
-              {/* Owl Logo Large */}
-              <div className="rounded-full bg-accent p-4">
-                <img src="/logo-light.png" alt="Owl logo" className="h-8 w-8" />
+            <div className="flex flex-1 flex-col items-center justify-center space-y-6">
+              {/* Score Circle */}
+              <div className="relative h-40 w-40">
+                <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#2a2a3e"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#6C63FF"
+                    strokeWidth="8"
+                    strokeDasharray="283"
+                    strokeDashoffset={283 - (score / questions.length) * 283}
+                    strokeLinecap="round"
+                    className="transition-all duration-1000"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                  <span className="text-4xl font-bold">
+                    {score}/{questions.length}
+                  </span>
+                  <span className="text-sm text-gray-400">CORRECT</span>
+                </div>
               </div>
 
               {/* Score Text */}
-              <h2 className="text-2xl font-bold text-background">YOU EARNED</h2>
-              <p className="text-lg font-bold text-background">
-                {pointsEarned} Read POINTS
-              </p>
-
-              {/* Score Circle */}
-              <div className="relative h-32 w-32">
-                <svg className="h-full w-full" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="10"
-                    strokeOpacity="0.2"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="10"
-                    strokeDasharray="283"
-                    strokeDashoffset={283 - (score / questions.length) * 283}
-                    transform="rotate(-90 50 50)"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-background">
-                  <span className="text-3xl font-bold">
-                    {score}/{questions.length}
-                  </span>
-                  <span className="text-sm">CORRECT</span>
-                </div>
+              <div className="text-center">
+                <h2 className="mb-2 text-2xl font-bold text-white">
+                  Quiz Complete!
+                </h2>
+                <p className="text-lg font-semibold text-gray-300">
+                  You earned {pointsEarned} points
+                </p>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex w-full flex-col gap-3">
+            <div className="mt-8 flex w-full flex-col gap-3">
               <button
                 onClick={handleTryAgain}
-                className="flex w-full items-center justify-center rounded-md bg-background py-3 text-brandblue"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#6C63FF] py-4 font-bold text-white transition-all hover:bg-[#5952d4]"
               >
-                <RotateCw size={16} className="mr-2" />
-                TRY AGAIN
+                <RotateCw size={20} />
+                Try Again
               </button>
-              <Link to="/home">
-                <button className="flex w-full items-center justify-center rounded-md border border-background py-3 text-background">
-                  BACK
+              <Link to="/home" className="w-full">
+                <button className="flex w-full items-center justify-center rounded-2xl border-2 border-[#2a2a3e] py-4 font-bold text-white transition-all hover:bg-[#2a2a3e]">
+                  Back to Home
                 </button>
               </Link>
             </div>

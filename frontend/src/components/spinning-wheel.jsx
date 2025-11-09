@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import CircleSegment from "./ui/circle-segment";
 
 const SpinningWheel = ({ onSpinComplete, canSpin = true, className }) => {
   const [rotation, setRotation] = useState(0);

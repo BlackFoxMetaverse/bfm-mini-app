@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import SpinningWheel from "../components/spinning-wheel";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/header";
 import { GlassModal } from "../components/ui/glass-modal";
 import { getUserProfile } from "../api/user";
@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 export default function Spin() {
   const [showGlassModal, setShowGlassModal] = useState(false);
   const [selectedPrize, setSelectedPrize] = useState(null);
+  const navigate = useNavigate();
 
   // Check if user can spin
   const { data: profileData, isLoading: loadingProfile } = useQuery({
@@ -40,10 +41,26 @@ export default function Spin() {
   };
 
   return (
-    <div className="relative h-[100dvh] min-h-screen w-full bg-gradient-to-b from-zinc-900 via-slate-900 to-black font-sans text-white">
-      <section className="mx-auto flex h-full min-h-screen w-full max-w-md flex-col items-center justify-between overflow-y-auto px-6 pt-6">
-        <Header />
-
+    <div className="relative min-h-[100dvh] w-full bg-gradient-to-b from-zinc-900 via-slate-900 to-black font-sans text-white">
+      {/* Header */}
+      <div className="mb- px-6 pt-6 flex items-center justify-between">
+        <button
+          onClick={() => navigate(-1)}
+          className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+      <section className="mx-auto flex h-full min-h-screen w-full max-w-md flex-col items-center justify-between px-6 pt-6">
         {/* Header */}
         <div className="mb-5 mt-6 text-center">
           <h1 className="mb-4 text-7xl font-black leading-[0.85] tracking-tight">

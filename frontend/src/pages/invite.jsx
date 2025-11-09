@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Mock components - replace with your actual imports
@@ -144,19 +144,24 @@ const Invite = () => {
     <div className="h-[100dvh] min-h-screen w-full overflow-y-auto bg-[#0a0a0a]">
       <div className="h-full overflow-y-auto pb-28">
         <div className="relative mx-auto w-full max-w-md bg-[#0a0a0a] p-4">
-          {/* Back Button */}
-          <button onClick={() => navigate(-1)} className="mb-4 text-white">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+          {/* Header */}
+          <div className="mb-4 flex items-center justify-between">
+            <button
+              onClick={() => navigate(-1)}
+              className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
             >
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
 
           {/* Stats Cards */}
           <div className="mb-6 grid grid-cols-2 gap-3">
@@ -257,7 +262,7 @@ const Invite = () => {
           </div>
 
           {/* Referral Activity List */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <div className="flex items-center justify-between rounded-xl border border-gray-800 bg-[#1a1a1a] p-4">
               <div>
                 <div className="mb-1 font-medium text-white">
@@ -312,7 +317,7 @@ const Invite = () => {
                 <div className="text-xs text-gray-500">01:52:22 15:43</div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

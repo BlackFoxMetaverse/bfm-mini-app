@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Button } from "../components/ui/button";
-import { InteractiveGridPattern } from "../components/magicui/interactive-grid-pattern";
-import { ArrowRightIcon, Wallet2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 import { useAppKit } from "@reown/appkit/react";
-import { useWalletClient } from "wagmi";
 import { useMutation } from "@tanstack/react-query";
-import { loginOrRegisterWithTelegram, getUserProfile } from "@/api/user";
+import { loginOrRegisterWithTelegram } from "@/api/user";
 import { useTelegramUser } from "@/hooks/useTelegramUser";
 import { useWalletAuth } from "../hooks/useWalletAuth";
 
@@ -109,22 +105,8 @@ export default function Auth() {
         <div className="relative flex h-screen w-full flex-col overflow-hidden bg-black">
           {/* Logo */}
           <div className="absolute left-6 top-8 z-20 w-full">
-            <div className="flex w-full items-center justify-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-white">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M2 2h7v7H2V2zm0 9h7v7H2v-7zm9-9h7v7h-7V2z"
-                    fill="black"
-                  />
-                  <path
-                    d="M14 15v2m0 0v2m0-2h-2m2 0h2"
-                    stroke="black"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-              <span className="text-xl font-semibold text-white">academy</span>
+            <div className="flex items-center justify-center">
+              <img src="/auth/logo_white.png" alt="" />
             </div>
           </div>
 
@@ -204,32 +186,21 @@ export default function Auth() {
             <div className="relative">
               <div className="absolute -top-5 right-5 h-20 w-20 overflow-hidden rounded-full border-4 border-gray-800 bg-gray-700">
                 <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop"
+                  src="/auth/user2.png"
                   alt="Student 1"
                   className="h-full w-full object-cover"
                 />
               </div>
 
               {/* Graduation Cap Icon */}
-              <div className="absolute -left-3 -top-12 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-lg">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="black"
-                  strokeWidth="2"
-                >
-                  <path d="M12 3L2 7.5L12 12L22 7.5L12 3Z" />
-                  <path d="M2 7.5V14.5L12 19L22 14.5V7.5" />
-                  <path d="M12 12V19" />
-                </svg>
+              <div className="absolute -left-3 -top-12 z-20 flex h-7 w-7 items-center justify-center rounded-full shadow-lg">
+                <img src="/auth/graduation.svg" alt="" />
               </div>
 
               {/* Bottom Profile */}
               <div className="absolute -top-[7.6rem] left-6 h-20 w-20 overflow-hidden rounded-full border-4 border-gray-800 bg-gray-700">
                 <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"
+                  src="/auth/user1.png"
                   alt="Student 2"
                   className="h-full w-full object-cover"
                 />
@@ -243,7 +214,14 @@ export default function Auth() {
               For the
               <br />
               Phenomenal{" "}
-              <span className="inline-block rounded-lg bg-white px-3 py-1 text-black">
+              <span
+                style={{
+                  backgroundImage: "url('/auth/vec1.png')",
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                }}
+                className="inline-block rounded-lg px-3 py-1 text-black"
+              >
                 Future
               </span>
             </h1>
